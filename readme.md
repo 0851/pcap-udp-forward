@@ -32,7 +32,10 @@ GLOBAL OPTIONS:
    --version, -v             print the version
 
 ```
-
+##build
+```bash
+make build
+```
 ##example
 
 ```bash
