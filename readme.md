@@ -32,3 +32,15 @@ GLOBAL OPTIONS:
    --version, -v             print the version
 
 ```
+
+##example
+
+```bash
+#添加执行权限
+chmod +x pcap-udp-forward
+#获取所有网卡设备
+./pcap-udp-forward -l
+#执行
+./pcap-udp-forward -s et0 -f "udp port 57" -d 127.0.0.1:8080 -d 127.0.0.1:9000
+
+```
