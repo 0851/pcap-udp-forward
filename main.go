@@ -79,7 +79,6 @@ func forwardOnePacket(source string, dest []string, filter string) {
 
 	exclude += " ))"
 
-	fmt.Println(exclude)
 	err = handle.SetBPFFilter(filter + exclude)
 
 	errorHandle(err)
