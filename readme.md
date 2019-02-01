@@ -32,11 +32,11 @@ GLOBAL OPTIONS:
    --version, -v             print the version
 
 ```
-##build
+## build
 ```bash
 make build
 ```
-##example
+## example
 
 ```bash
 #添加执行权限
