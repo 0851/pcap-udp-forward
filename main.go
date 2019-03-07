@@ -19,7 +19,7 @@ func logErrorMessage(err interface{}) {
 	case error:
 		log.Printf("[Error]: %s", e.Error())
 	default:
-		
+
 	}
 }
 
@@ -50,6 +50,7 @@ func forward(source []string, dest []string, filter string) {
 		log.Println("[Warning]: lose source , usage : -s device name -s device name")
 		return
 	}
+	log.Printf("[Run]: Start forward %s | %s | %s", strings.Join(source, ","), strings.Join(dest, ","), filter)
 	for _, s := range source {
 		forwardOnePacket(s, dest, filter)
 	}
@@ -98,7 +99,7 @@ func forwardOnePacket(source string, dest []string, filter string) {
 	log.Printf("[Catch]:  %s", f)
 
 	for packet := range packetSource.Packets() {
-		packetHandle(packet, dest)
+		packetHandle(packet, dest, f)
 	}
 }
 func sendUdp(host string, port string, payload []byte) {
@@ -110,7 +111,7 @@ func sendUdp(host string, port string, payload []byte) {
 	_, err = conn.Write(payload)
 	logErrorMessage(err)
 }
-func packetHandle(p gopacket.Packet, dest []string) {
+func packetHandle(p gopacket.Packet, dest []string, filter string) {
 	udpLayer := p.TransportLayer()
 	if udpLayer != nil {
 		for _, d := range dest {
@@ -118,7 +119,7 @@ func packetHandle(p gopacket.Packet, dest []string) {
 			host := da[0]
 			port := da[1]
 			payload := udpLayer.LayerPayload()
-			log.Printf("[Send]:  %s:%s", host, port)
+			log.Printf("[Send]:  %s:%s | %s", host, port, filter)
 			sendUdp(host, port, payload)
 		}
 	}
