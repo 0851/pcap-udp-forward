@@ -12,19 +12,24 @@ import (
 	"time"
 )
 
-func errorHandle(err error) {
-	if err != nil {
-		log.Fatal(err)
-		panic(err.Error())
+func logErrorMessage(err interface{}) {
+	switch e := err.(type) {
+	case gopacket.ErrorLayer:
+		log.Printf("[ErrorLayer]: %s", e.Error())
+	case error:
+		log.Printf("[Error]: %s", e.Error())
+	default:
+		log.Printf("[Error]: Passed a non-error to GetMessage")
 	}
 }
+
 func printAllDevice() {
 	var ifs []pcap.Interface
 	var err error
 
 	ifs, err = pcap.FindAllDevs()
 
-	errorHandle(err)
+	logErrorMessage(err)
 
 	ifsLen := len(ifs)
 	for i := 0; i < ifsLen; i++ {
@@ -42,7 +47,7 @@ func printAllDevice() {
 func forward(source []string, dest []string, filter string) {
 	sourceLen := len(source)
 	if sourceLen <= 0 {
-		fmt.Println("lose source , usage : -s device name -s device name")
+		log.Println("[Warning]: lose source , usage : -s device name -s device name")
 		return
 	}
 	for _, s := range source {
@@ -60,11 +65,11 @@ func forwardOnePacket(source string, dest []string, filter string) {
 
 	defer handle.Close()
 
-	errorHandle(err)
+	logErrorMessage(err)
 
 	destLen := len(dest)
 	if destLen <= 0 {
-		fmt.Println("lose dest , usage : -d ip:port -d ip:port")
+		log.Println("[Warning]: lose dest , usage : -d ip:port -d ip:port")
 		return
 	}
 
@@ -79,14 +84,18 @@ func forwardOnePacket(source string, dest []string, filter string) {
 
 	exclude += " ))"
 
-	err = handle.SetBPFFilter(filter + exclude)
+	f := filter + exclude
 
-	errorHandle(err)
+	err = handle.SetBPFFilter(f)
+
+	logErrorMessage(err)
 
 	packetSource := gopacket.NewPacketSource(
 		handle,
 		handle.LinkType(),
 	)
+
+	log.Printf("[Catch]:  %s", f)
 
 	for packet := range packetSource.Packets() {
 		packetHandle(packet, dest)
@@ -94,12 +103,12 @@ func forwardOnePacket(source string, dest []string, filter string) {
 }
 func sendUdp(host string, port string, payload []byte) {
 	udpAddr, err := net.ResolveUDPAddr("udp4", host+":"+port)
-	errorHandle(err)
+	logErrorMessage(err)
 	conn, err := net.DialUDP("udp", nil, udpAddr)
-	errorHandle(err)
+	logErrorMessage(err)
 	defer conn.Close()
 	_, err = conn.Write(payload)
-	errorHandle(err)
+	logErrorMessage(err)
 }
 func packetHandle(p gopacket.Packet, dest []string) {
 	udpLayer := p.TransportLayer()
@@ -109,19 +118,18 @@ func packetHandle(p gopacket.Packet, dest []string) {
 			host := da[0]
 			port := da[1]
 			payload := udpLayer.LayerPayload()
+			log.Printf("[Send]:  %s:%s", host, port)
 			sendUdp(host, port, payload)
 		}
 	}
 	err := p.ErrorLayer()
-	if err != nil {
-		log.Fatal("Error decoding some part of the packet.")
-	}
+	logErrorMessage(err)
 }
 
 func main() {
 	//	获取 libpcap 的版本
 	version := pcap.Version()
-	fmt.Println(version)
+	log.Println(version)
 	app := cli.NewApp()
 	app.Name = "pcap-udp-forward"
 	app.Usage = "forward packet with udp"
@@ -159,5 +167,6 @@ func main() {
 		return nil
 	}
 	err := app.Run(os.Args)
-	errorHandle(err)
+	
+	logErrorMessage(err)
 }
