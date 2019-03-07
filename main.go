@@ -19,7 +19,7 @@ func logErrorMessage(err interface{}) {
 	case error:
 		log.Printf("[Error]: %s", e.Error())
 	default:
-		log.Printf("[Error]: Passed a non-error to GetMessage")
+		
 	}
 }
 
@@ -167,6 +167,6 @@ func main() {
 		return nil
 	}
 	err := app.Run(os.Args)
-	
+
 	logErrorMessage(err)
 }
