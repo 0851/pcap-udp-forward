@@ -44,6 +44,6 @@ chmod +x pcap-udp-forward
 #获取所有网卡设备
 ./pcap-udp-forward -l
 #执行
-./pcap-udp-forward -s en0 -f "udp port 57" -d 127.0.0.1:8080 -d 127.0.0.1:9000
+./pcap-udp-forward -s eth0 -f "udp port 57" -d 127.0.0.1:8080 -d 127.0.0.1:9000
 
 ```
