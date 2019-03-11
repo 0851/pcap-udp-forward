@@ -12,12 +12,12 @@ import (
 	"time"
 )
 
-func logErrorMessage(err interface{}) {
+func logErrorMessage(err interface{},title string) {
 	switch e := err.(type) {
 	case gopacket.ErrorLayer:
-		log.Printf("[ErrorLayer]: %s", e.Error())
+		log.Printf("[ErrorLayer]: %s | %s", e.Error(),title)
 	case error:
-		log.Printf("[Error]: %s", e.Error())
+		log.Printf("[Error]: %s | %s", e.Error(),title)
 	default:
 
 	}
@@ -29,7 +29,7 @@ func printAllDevice() {
 
 	ifs, err = pcap.FindAllDevs()
 
-	logErrorMessage(err)
+	logErrorMessage(err,'print all devs')
 
 	ifsLen := len(ifs)
 	for i := 0; i < ifsLen; i++ {
@@ -66,7 +66,7 @@ func forwardOnePacket(source string, dest []string, filter string) {
 
 	defer handle.Close()
 
-	logErrorMessage(err)
+	logErrorMessage(err,'open pcap')
 
 	destLen := len(dest)
 	if destLen <= 0 {
@@ -89,7 +89,7 @@ func forwardOnePacket(source string, dest []string, filter string) {
 
 	err = handle.SetBPFFilter(f)
 
-	logErrorMessage(err)
+	logErrorMessage(err,'set filter')
 
 	packetSource := gopacket.NewPacketSource(
 		handle,
@@ -104,12 +104,12 @@ func forwardOnePacket(source string, dest []string, filter string) {
 }
 func sendUdp(host string, port string, payload []byte) {
 	udpAddr, err := net.ResolveUDPAddr("udp4", host+":"+port)
-	logErrorMessage(err)
+	logErrorMessage(err,'get udp addr')
 	conn, err := net.DialUDP("udp", nil, udpAddr)
-	logErrorMessage(err)
+	logErrorMessage(err,'create udp')
 	defer conn.Close()
 	_, err = conn.Write(payload)
-	logErrorMessage(err)
+	logErrorMessage(err,'write payload')
 }
 func packetHandle(p gopacket.Packet, dest []string, filter string) {
 	udpLayer := p.TransportLayer()
@@ -124,7 +124,7 @@ func packetHandle(p gopacket.Packet, dest []string, filter string) {
 		}
 	}
 	err := p.ErrorLayer()
-	logErrorMessage(err)
+	logErrorMessage(err,'pcap error layer')
 }
 
 func main() {
@@ -169,5 +169,5 @@ func main() {
 	}
 	err := app.Run(os.Args)
 
-	logErrorMessage(err)
+	logErrorMessage(err,'start error')
 }
